@@ -24,7 +24,7 @@ for folder in os.listdir(inputPath):
         savePath = os.path.join(outputPath, "spectrograms", f"{folder}_{counter}.png")
         
         sg.saveSpectrogram(currentFile, savePath, size_x = 2.56, size_y = 2.56)
-        dataset_csv.write(f"{folder}_{counter}.png, {classification[folder]}")
+        dataset_csv.write(f"{folder}_{counter}.png, {classification[folder]}\n")
 
         counter += 1
 
