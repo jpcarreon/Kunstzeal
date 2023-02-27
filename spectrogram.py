@@ -45,6 +45,8 @@ def saveSpectrogram(
     plt.axis("off")
     fig.tight_layout(pad=0)
     plt.savefig(outputPath)
+    plt.clf()
+    plt.close()
 
 def displaySpectrogram(
     filepath, 
