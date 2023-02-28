@@ -1,5 +1,5 @@
 __pycache__/
 .tours/
-input/
-data_output/
+src/input/
+src/output/
 src/test.py
