@@ -1,3 +1,4 @@
+import gc
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -47,8 +48,11 @@ def saveSpectrogram(
     plt.axis("off")
     fig.tight_layout(pad=0)
     plt.savefig(outputPath)
+
+    # clear figure and reclaim memory
     plt.clf()
-    plt.close()
+    plt.close('all')
+    gc.collect()
 
 
 def displaySpectrogram(
