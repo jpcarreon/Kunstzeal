@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-import numpy as np
 import cnn_utils
+
 
 class ConvNet(nn.Module):
     def __init__(self):
@@ -53,7 +53,8 @@ test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
 
 net = ConvNet().to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, momentum=momentum)
+optimizer = torch.optim.SGD(
+    net.parameters(), lr=learning_rate, momentum=momentum)
 
 step_size = ((len(train_set) + 1) // batch_size) // 4
 
@@ -75,7 +76,8 @@ for epoch in range(num_epochs):
         running_loss += loss.item()
 
         if (i + 1) % step_size == 0:
-            print(f"[Epoch {epoch + 1}, Step {i + 1:5d}] loss: {running_loss / 2000:.3f}")
+            print(
+                f"[Epoch {epoch + 1}, Step {i + 1:5d}] loss: {running_loss / 2000:.3f}")
             running_loss = 0.0
 
 print("Finished Training")

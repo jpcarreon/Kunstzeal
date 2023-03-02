@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 import torch
 import torchvision
 from torch.utils.data import Dataset
@@ -57,6 +58,8 @@ def viewRandomSample(data_loader, classes, batch_size):
     imshow(torchvision.utils.make_grid(images))
 
 # broken rn
+
+
 def stratifiedSampling(dataset, k):
     class_counts = {}
     train_data = []
