@@ -102,14 +102,14 @@ for epoch in range(num_epochs):
             running_loss = 0.0
 
 print("Finished Training")
-torch.save(net.state_dict(), "./cifar_net.pth")
+torch.save(net.state_dict(), "./cifar_net.pt")
 
 
 dataiter = iter(test_loader)
 images, labels = next(dataiter)
 
 net = ConvNet()
-net.load_state_dict(torch.load("./cifar_net.pth"))
+net.load_state_dict(torch.load("./cifar_net.pt"))
 
 correct_pred = {classname: 0 for classname in classes}
 total_pred = {classname: 0 for classname in classes}
