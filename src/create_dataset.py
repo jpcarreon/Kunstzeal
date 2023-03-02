@@ -8,7 +8,7 @@ classification = {
     "192K": 3, "128K": 4
 }
 inputPath = "./input"
-outputPath = "./data_output"
+outputPath = "./output"
 
 if not os.path.exists(os.path.join(outputPath, "spectrograms")):
     os.makedirs(os.path.join(outputPath, "spectrograms"))

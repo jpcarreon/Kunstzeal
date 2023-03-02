@@ -5,6 +5,7 @@ import torch
 import torchvision
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
+from cv2 import imread
 from skimage import io
 
 
@@ -21,7 +22,7 @@ class SpectrogramDataset(Dataset):
 
     def __getitem__(self, index):
         img_path = os.path.join(self.root_dir, self.labels.iloc[index, 0])
-        image = io.imread(img_path)
+        image = imread(img_path)    # io.imread reads 4 channels instead of 3
         y_label = torch.tensor(int(self.labels.iloc[index, 1]))
 
         if self.transform:
