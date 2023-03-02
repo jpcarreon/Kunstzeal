@@ -3,3 +3,4 @@ __pycache__/
 src/input/
 src/output/
 src/test.py
+src/data/
