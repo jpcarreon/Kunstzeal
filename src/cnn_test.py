@@ -27,8 +27,10 @@ class ConvNet(nn.Module):
         x = self.fc3(x)                       # -> n, 10
         return x
 
-def get_all_preds(net, loader):
+def get_all_preds(net, loader, classes):
     all_preds = torch.tensor([])
+    correct_pred = {classname: 0 for classname in classes}
+    total_pred = {classname: 0 for classname in classes}
 
     for batch in loader:
         images, labels = batch
@@ -38,6 +40,15 @@ def get_all_preds(net, loader):
             (all_preds, preds),
             dim=0
         )
+
+        for label, predictions in zip(labels, torch.max(preds, 1)[1]):
+            if label == predictions:
+                correct_pred[classes[label]] += 1
+            total_pred[classes[label]] += 1
+
+    for classname, count in correct_pred.items():
+        accuracy = 100 * float(count) / total_pred[classname]
+        print(f"Accuracy {classname:5s}: {count} / {total_pred[classname]} = {accuracy:.1f}%")
     
     return all_preds
 
@@ -56,7 +67,7 @@ net = ConvNet()
 net.load_state_dict(torch.load("./cifar_net.pt"))
 
 with torch.no_grad():
-    train_preds = get_all_preds(net, test_loader)
+    train_preds = get_all_preds(net, test_loader, classes)
 
     stacked = torch.stack(
         (
