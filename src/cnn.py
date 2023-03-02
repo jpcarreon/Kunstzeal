@@ -77,8 +77,8 @@ for epoch in range(num_epochs):
 
         if (i + 1) % step_size == 0:
             print(
-                f"[Epoch {epoch + 1}, Step {i + 1:5d}] loss: {running_loss / 2000:.3f}")
+                f"[Epoch {epoch + 1}, Step {i + 1:5d}] loss: {running_loss / step_size:.3f}")
             running_loss = 0.0
 
 print("Finished Training")
-torch.save(net.state_dict(), "./specral_net.pt")
+torch.save(net.state_dict(), "./spectral_net.pt")
