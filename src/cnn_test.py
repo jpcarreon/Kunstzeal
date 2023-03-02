@@ -4,7 +4,8 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
+import seaborn as sn
 
 class ConvNet(nn.Module):
     def __init__(self):
@@ -26,37 +27,60 @@ class ConvNet(nn.Module):
         x = self.fc3(x)                       # -> n, 10
         return x
 
+def get_all_preds(net, loader):
+    all_preds = torch.tensor([])
+
+    for batch in loader:
+        images, labels = batch
+
+        preds = net(images)
+        all_preds = torch.cat(
+            (all_preds, preds),
+            dim=0
+        )
+    
+    return all_preds
+
+classes = ('plane', 'car', 'bird', 'cat',
+           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
 transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
 test_dataset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                        download=True, transform=transform)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=4,
                                          shuffle=False, num_workers=2)
 
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
 net = ConvNet()
 net.load_state_dict(torch.load("./cifar_net.pt"))
 
-correct_pred = {classname: 0 for classname in classes}
-total_pred = {classname: 0 for classname in classes}
-
 with torch.no_grad():
-    for data in test_loader:
-        images, labels = data
+    train_preds = get_all_preds(net, test_loader)
 
-        outputs = net(images)
+    stacked = torch.stack(
+        (
+            torch.tensor(test_dataset.targets),
+            torch.max(train_preds, 1)[1]
+        ),
+        dim=1
+    )
 
-        _, predictions = torch.max(outputs, 1)
+    cm = torch.zeros(10, 10, dtype=torch.int32)
 
-        for label, predictions in zip(labels, predictions):
-            if label == predictions:
-                correct_pred[classes[label]] += 1
-            total_pred[classes[label]] += 1
+    for p in stacked:
+        j, k = p.tolist()
+        cm[j, k] += 1
+    
+    df_cm = pd.DataFrame(cm.tolist(), index=[i for i in classes], columns=[i for i in classes])
+    
+    plt.figure(figsize=(10, 7))
+    sn.heatmap(df_cm, annot=True, fmt="3d", cmap="rocket_r")
 
-for classname, count in correct_pred.items():
-    accuracy = 100 * float(count) / total_pred[classname]
-    print(f"Accuracy [{classname:5s}]: {count} / {total_pred[classname]} = {accuracy:.1f}%")
+    plt.xlabel("Predicted label")
+    plt.ylabel("True label")
+    plt.title("Confusion Matrix")
+    plt.tight_layout()
+
+    plt.show()
+    
