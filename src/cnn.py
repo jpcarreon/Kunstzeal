@@ -9,21 +9,22 @@ class ConvNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv1 = nn.Conv2d(3, 32, 5)
-        self.conv2 = nn.Conv2d(32, 32, 5)
-        self.fc1 = nn.Linear(32 * 28 * 28, 128)
+        self.conv1 = nn.Conv2d(3, 32, 5)        # 1st conv layer: 5x5 kernel with 32 features
+        self.conv2 = nn.Conv2d(32, 32, 5)       # 2nd & 3rd conv layers: 5x5 kernel with 32 features
+        self.fc1 = nn.Linear(32 * 28 * 28, 128) # Result of 3rd max pooling is 28x28x32 images; thus fc layer has 28*28*32 neurons
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, 5)
 
     def forward(self, x):
-        # -> n, 3, 256, 256
-        x = self.pool(F.relu(self.conv1(x)))  # -> n, 32, 126, 126
-        x = self.pool(F.relu(self.conv2(x)))  # -> n, 32, 61, 61
-        x = self.pool(F.relu(self.conv2(x)))  # -> n, 32, 28, 28
-        x = torch.flatten(x, 1)               # -> n, 25088
-        x = F.relu(self.fc1(x))               # -> n, 128
-        x = F.relu(self.fc2(x))               # -> n, 128
-        x = self.fc3(x)                       # -> n, 5
+        # input data -> 3, 256, 256
+        #               channels, width, length
+        x = self.pool(F.relu(self.conv1(x)))  # conv layer 1 + mpool -> 32, 126, 126
+        x = self.pool(F.relu(self.conv2(x)))  # conv layer 2 + mpool -> 32, 61, 61
+        x = self.pool(F.relu(self.conv2(x)))  # conv layer 3 + mpool -> 32, 28, 28
+        x = torch.flatten(x, 1)               # flatten -> 25088
+        x = F.relu(self.fc1(x))               # fc layer 1 -> 128
+        x = F.relu(self.fc2(x))               # fc layer 2 -> 128
+        x = self.fc3(x)                       # fc layer 3 -> 5
         return x
 
 
