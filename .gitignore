@@ -4,3 +4,4 @@ src/input/
 src/output/
 src/test.py
 src/data/
+src/*.pt
