@@ -17,8 +17,9 @@ dataset_csv = open(f"{outputPath}/spectral_record.csv", "w")
 
 for folder in os.listdir(inputPath):
     counter = 0
+    filesNum = len(os.listdir(os.path.join(inputPath, folder)))
     for fp in os.listdir(os.path.join(inputPath, folder)):
-        print(f"Current: [{folder}] {fp}")
+        print(f"Current: [{folder:4s}] {fp}", end=" ")
 
         currentFile = os.path.join(inputPath, folder, fp)
         savePath = os.path.join(outputPath, "spectrograms", f"{folder}_{counter}.png")
@@ -27,5 +28,6 @@ for folder in os.listdir(inputPath):
         dataset_csv.write(f"{folder}_{counter}.png, {classification[folder]}\n")
 
         counter += 1
+        print(f"{counter}/{filesNum}")
 
 dataset_csv.close()
