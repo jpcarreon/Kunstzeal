@@ -1,38 +1,10 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
-import cnn_utils as cnu
-import cnn_models as cnm
 import pandas as pd
 import seaborn as sn
-
-
-def get_all_preds(net, loader, classes):
-    all_preds = torch.tensor([])
-    correct_pred = {classname: 0 for classname in classes}
-    total_pred = {classname: 0 for classname in classes}
-
-    for batch in loader:
-        images, labels = batch
-
-        preds = net(images)
-        all_preds = torch.cat(
-            (all_preds, preds),
-            dim=0
-        )
-
-        for label, predictions in zip(labels, torch.max(preds, 1)[1]):
-            if label == predictions:
-                correct_pred[classes[label]] += 1
-            total_pred[classes[label]] += 1
-
-    for classname, count in correct_pred.items():
-        accuracy = 100 * float(count) / total_pred[classname]
-        print(
-            f"Accuracy {classname:4s}: {count} / {total_pred[classname]} = {accuracy:.2f}%")
-
-    return all_preds
-
+import cnn_utils
+import cnn_models
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -43,7 +15,7 @@ momentum = 0.9
 
 classes = ("FLAC", "V0", "320K", "192K", "128K")
 
-dataset = cnu.SpectrogramDataset(
+dataset = cnn_utils.SpectrogramDataset(
     "./data/dataset_3110/spectral_record.csv", "./data/dataset_3110/spectrograms/", transforms.ToTensor())
 
 train_size = int(dataset.__len__() * 0.8)
@@ -56,8 +28,8 @@ test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
                                           shuffle=False, num_workers=2)
 
 
-net = cnm.ConvNetEB().to(device)
-net_test = cnm.ConvNetEB()
+net = cnn_models.ConvNetEB().to(device)
+net_test = cnn_models.ConvNetEB()
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(
@@ -93,7 +65,7 @@ torch.save(net.state_dict(), "./spectral_net.pt")
 net_test.load_state_dict(torch.load("./spectral_net.pt"))
 
 with torch.no_grad():
-    train_preds = get_all_preds(net, test_loader, classes)
+    train_preds = cnn_utils.get_all_preds(net_test, test_loader, classes)
     test_targets = [dataset.getItemLabel(i) for i in test_set.indices]
 
     stacked = torch.stack(

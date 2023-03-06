@@ -6,7 +6,6 @@ import torchvision
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 from cv2 import imread
-from skimage import io
 
 
 class SpectrogramDataset(Dataset):
@@ -32,6 +31,34 @@ class SpectrogramDataset(Dataset):
 
     def getItemLabel(self, index):
         return self.labels.iloc[index, 1]
+
+
+def get_all_preds(net, loader, classes, printAcc=False):
+    all_preds = torch.tensor([])
+    correct_pred = {classname: 0 for classname in classes}
+    total_pred = {classname: 0 for classname in classes}
+
+    for batch in loader:
+        images, labels = batch
+
+        preds = net(images)
+        all_preds = torch.cat(
+            (all_preds, preds),
+            dim=0
+        )
+
+        for label, predictions in zip(labels, torch.max(preds, 1)[1]):
+            if label == predictions:
+                correct_pred[classes[label]] += 1
+            total_pred[classes[label]] += 1
+
+    if printAcc:
+        for classname, count in correct_pred.items():
+            accuracy = 100 * float(count) / total_pred[classname]
+            print(
+                f"Accuracy {classname:4s}: {count} / {total_pred[classname]} = {accuracy:.2f}%")
+
+    return all_preds
 
 
 def dictCounter(array):
