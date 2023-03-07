@@ -9,7 +9,7 @@ import cnn_models
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-num_epochs = 50
+num_epochs = 100
 batch_size = 32
 learning_rate = 0.001
 momentum = 0.9
@@ -30,8 +30,8 @@ test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
                                           shuffle=False, num_workers=2)
 
 
-net = cnn_models.ConvNetA().to(device)
-net_test = cnn_models.ConvNetA()
+net = cnn_models.ConvNetD().to(device)
+net_test = cnn_models.ConvNetD()
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(

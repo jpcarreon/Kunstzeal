@@ -1,17 +1,9 @@
 import os
+import torch
 import backend
-from PySide6.QtWidgets import QWidget, QMainWindow, QPushButton, QVBoxLayout, \
+from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, \
     QTreeWidget, QTreeWidgetItem, QCheckBox
 from PySide6.QtCore import Qt
-
-
-"""
-for (color, code) in colors:
-    newItem = QTreeWidgetItem(treeWidget, [None, color, code])
-    checkBox = QCheckBox()
-    checkBox.stateChanged.connect(self.handleItemCheck)
-    treeWidget.setItemWidget(newItem, 0, checkBox)
-"""
 
 class ListWidget(QWidget):
     def __init__(self):
@@ -19,8 +11,8 @@ class ListWidget(QWidget):
         self.setAcceptDrops(True)
         self.links = []
         self.entries = []
-        self.counter = 0
         self.ConvNet = backend.ConvNetD()
+        self.ConvNet.load_state_dict(torch.load("./D1.pt"))
         
         layout = QVBoxLayout()
         
@@ -37,20 +29,11 @@ class ListWidget(QWidget):
         layout.addWidget(runButton)
         self.setLayout(layout)
     
-    def runPredictions(self):
-        #backend.saveSpectrogram(i, f"./temp/spectral_{self.counter}.png")
-        #self.counter += 1
-
-        if not os.path.exists("./output"): os.makedirs("output")
-        
+    def runPredictions(self):        
         if len(self.entries) == 0: return
         
         for i in self.entries:
-            savePath = f"./output/spectral_{self.counter}.png"
-            self.counter += 1
-            
-            backend.saveSpectrogram(i.text(0), savePath)
-            pred = self.ConvNet.predictSingle("./D1.pt", savePath)
+            pred = backend.predictMusic(i.text(0), self.ConvNet)
             print(f"{i.text(1)} - {pred}")
 
         #self.treeWidget.clear()
@@ -59,7 +42,7 @@ class ListWidget(QWidget):
 
     def handleItemClick(self):
         item = self.treeWidget.currentItem()
-        backend.displaySpectrogram(item.text(0))
+        backend.displaySpectrogram(item.text(0), item.text(1))
 
     def checkFileFormat(self, event):
         for fp in event.mimeData().urls():
