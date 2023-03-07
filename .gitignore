@@ -1,7 +1,7 @@
 __pycache__/
 .tours/
-src/input/
-src/output/
-src/test.py
-src/data/
-src/*.pt
+input/
+output/
+test.py
+data/
+*.pt
