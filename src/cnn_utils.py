@@ -61,6 +61,14 @@ def get_all_preds(net, loader, classes, printAcc=False):
     return all_preds
 
 
+def displayProgress(progress, total, loss, rloss, scale=30):
+    current = int(scale * (progress / float(total)))
+    bar = "█" * current + "-" * (scale - current)
+
+    print(
+        f"\r  │{bar}│ Step {progress:3d}/{total:<3d} │ Loss: {loss:.5f} RLoss: {rloss:.5f}", end="\r")
+
+
 def dictCounter(array):
     counter = {}
     for i in array:
@@ -85,10 +93,9 @@ def viewRandomSample(data_loader, classes, batch_size):
     print(" ".join(f"{classes[labels[j]]:5s}" for j in range(batch_size)))
     imshow(torchvision.utils.make_grid(images))
 
-# broken rn
-
 
 def stratifiedSampling(dataset, k):
+    # broken rn
     class_counts = {}
     train_data = []
     train_label = []
