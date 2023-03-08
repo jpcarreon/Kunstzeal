@@ -1,30 +1,11 @@
 import os
 import torch
 import backend
+import threads
 from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QSplitter, \
-    QTreeWidget, QTreeWidgetItem, QCheckBox
-from PySide6.QtCore import Qt, QThread, Signal
+    QTreeWidget, QTreeWidgetItem, QMenu
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QCursor
-
-from time import sleep
-
-class predictionWorker(QThread):
-    progress = Signal(dict)
-    finished = Signal(int)
-
-    def run(self):
-        try:
-            for fp in self.entries:
-                pred = backend.predictMusic(fp, self.net)
-                
-                self.progress.emit({
-                    "fp": fp,
-                    "pred": pred
-                })
-        except:
-            self.finished.emit(0)
-        else:
-            self.finished.emit(1)
 
 class ListWidget(QWidget):
     def __init__(self):
@@ -46,12 +27,13 @@ class ListWidget(QWidget):
         self.inputTreeWidget = QTreeWidget()
         self.inputTreeWidget.setHeaderLabels(["Input Files", "Filename"])
         self.inputTreeWidget.hideColumn(1)
-        self.inputTreeWidget.itemDoubleClicked.connect(self.handleItemClickInput)
+        self.inputTreeWidget.installEventFilter(self)
+        
 
         self.outputTreeWidget = QTreeWidget()
         self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Prediction"])
         self.outputTreeWidget.hideColumn(0)
-        self.outputTreeWidget.itemDoubleClicked.connect(self.handleItemClickOutput)
+        self.outputTreeWidget.installEventFilter(self)
 
         innerLayout.addWidget(self.inputTreeWidget)
         innerLayout.addWidget(self.outputTreeWidget)
@@ -88,7 +70,7 @@ class ListWidget(QWidget):
 
     def runPredictions(self):
         self.runButton.setDisabled(True)
-        worker = predictionWorker(self)
+        worker = threads.predictionWorker(self)
         worker.entries = []
         worker.net = self.ConvNet
 
@@ -103,18 +85,6 @@ class ListWidget(QWidget):
         self.changeCursor(Qt.WaitCursor)
         worker.start()
         
-    def handleItemClickInput(self):
-        item = self.inputTreeWidget.currentItem()
-        print(f"{item.text(0)} - {item.isDisabled()}")
-        if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
-        backend.displaySpectrogram(item.text(0), item.text(1))
-
-    def handleItemClickOutput(self):
-        item = self.outputTreeWidget.currentItem()
-        print(f"{item.text(0)} - {item.isDisabled()}")
-        if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
-        backend.displaySpectrogram(item.text(0), item.text(1))
-
     def checkFileFormat(self, event):
         for fp in event.mimeData().urls():
             fp = fp.toString()
@@ -124,6 +94,32 @@ class ListWidget(QWidget):
         
         return True
     
+    def handleViewSpectrogram(self, item):
+        print(f"{item.text(0)} - {item.isDisabled()}")
+        if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
+
+        backend.displaySpectrogram(item.text(0), item.text(1))
+
+
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.ContextMenu and \
+            (source is self.inputTreeWidget or source is self.outputTreeWidget):
+
+            item = source.selectedItems()
+            if len(item) == 0: return False
+
+            contextMenu = QMenu()
+            contextMenu.addAction("View Spectrogram")
+            contextMenu.addAction("Remove")
+
+            contextMenu.triggered.connect(lambda _: self.handleViewSpectrogram(item[0]))
+            
+            contextMenu.exec(event.globalPos())
+
+            return True
+
+        return False
+
     def dragEnterEvent(self, event):
         # computationally heavy
         if self.checkFileFormat(event): event.accept()
@@ -144,8 +140,10 @@ class ListWidget(QWidget):
             else: self.links.append(i)
 
             fileName = i.split("/")[-1]
-            self.inputEntries.append(QTreeWidgetItem(
-                self.inputTreeWidget, [i, fileName]))
+
+            newEntry = QTreeWidgetItem(self.inputTreeWidget, [i, fileName])
+
+            self.inputEntries.append(newEntry)
 
         if len(self.inputEntries) > 0 and self.currentCursor.shape() == Qt.ArrowCursor:
             self.runButton.setDisabled(False)

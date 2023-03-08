@@ -130,8 +130,9 @@ def displaySpectrogram(
     fig.colorbar(img, ax=ax, format=f"%0.2f dB")
     fig.tight_layout(pad=2)
     fig.canvas.manager.set_window_title("Spectrogram")
+    
     plt.title(filename)
-    plt.show()
+    plt.show(block=True)
 
 
 def predictMusic(
