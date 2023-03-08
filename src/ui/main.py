@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtGui import QIcon
 import sys
 import inputField
 
@@ -7,6 +8,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.app = app
         self.setWindowTitle("Kunstzeal")
+        self.setWindowIcon(QIcon("icon.png"))
         self.menuBarSetup()
 
         self.setMinimumSize(1000, 600)
