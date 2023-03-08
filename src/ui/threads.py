@@ -8,8 +8,7 @@ class predictionWorker(QThread):
     def run(self):
         try:
             for fp in self.entries:
-                #pred = backend.predictMusic(fp, self.net)
-                pred=1
+                pred = backend.predictMusic(fp, self.net)
                 
                 self.progress.emit({
                     "fp": fp,

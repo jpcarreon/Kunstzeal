@@ -28,17 +28,25 @@ class ListWidget(QWidget):
         self.inputTreeWidget.setHeaderLabels(["Input Files", "Filename"])
         self.inputTreeWidget.hideColumn(1)
         self.inputTreeWidget.installEventFilter(self)
-        
+        self.inputTreeWidget.sizePolicy().setHorizontalStretch(1)
 
         self.outputTreeWidget = QTreeWidget()
         self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Prediction"])
         self.outputTreeWidget.hideColumn(0)
         self.outputTreeWidget.installEventFilter(self)
+        self.outputTreeWidget.setColumnWidth(1, 300)
+        self.outputTreeWidget.setColumnWidth(2, 10)
+        self.outputTreeWidget.setColumnWidth(3, 40)
+        self.outputTreeWidget.sizePolicy().setHorizontalStretch(2)
 
         innerLayout.addWidget(self.inputTreeWidget)
         innerLayout.addWidget(self.outputTreeWidget)
         mainLayout.addWidget(innerLayout)
         mainLayout.addWidget(self.runButton)
+
+        innerLayout.setStretchFactor(1, 1)
+        innerLayout.setStretchFactor(2, 3)
+
         self.setLayout(mainLayout)
 
     def changeCursor(self, cursorShape):
@@ -67,7 +75,21 @@ class ListWidget(QWidget):
         self.inputTreeWidget.takeTopLevelItem(0)
         self.inputEntries.pop(0)
 
+    def handleViewSpectrogram(self, item):
+        print(f"{item.text(0)} - {item.isDisabled()}")
+        if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
 
+        backend.displaySpectrogram(item.text(0), item.text(1))
+
+    def handleDeleteItem(self, source, item):
+        source.takeTopLevelItem(source.indexFromItem(item).row())
+        
+        self.links.pop(self.links.index(item.text(0)))
+        if item in self.inputEntries: 
+            self.inputEntries.pop(self.inputEntries.index(item))
+
+        print(self.inputEntries)
+        
     def runPredictions(self):
         self.runButton.setDisabled(True)
         worker = threads.predictionWorker(self)
@@ -93,13 +115,6 @@ class ListWidget(QWidget):
                 return False
         
         return True
-    
-    def handleViewSpectrogram(self, item):
-        print(f"{item.text(0)} - {item.isDisabled()}")
-        if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
-
-        backend.displaySpectrogram(item.text(0), item.text(1))
-
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.ContextMenu and \
@@ -109,10 +124,10 @@ class ListWidget(QWidget):
             if len(item) == 0: return False
 
             contextMenu = QMenu()
-            contextMenu.addAction("View Spectrogram")
-            contextMenu.addAction("Remove")
-
-            contextMenu.triggered.connect(lambda _: self.handleViewSpectrogram(item[0]))
+            contextMenu.addAction("View Spectrogram").triggered.connect(
+                lambda _: self.handleViewSpectrogram(item[0]))
+            contextMenu.addAction("Remove").triggered.connect(
+                lambda _: self.handleDeleteItem(source, item[0]))
             
             contextMenu.exec(event.globalPos())
 
