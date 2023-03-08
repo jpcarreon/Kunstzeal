@@ -31,12 +31,12 @@ class ListWidget(QWidget):
         self.inputTreeWidget.sizePolicy().setHorizontalStretch(1)
 
         self.outputTreeWidget = QTreeWidget()
-        self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Prediction"])
+        self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Prediction", "Mismatch?"])
         self.outputTreeWidget.hideColumn(0)
         self.outputTreeWidget.installEventFilter(self)
         self.outputTreeWidget.setColumnWidth(1, 300)
         self.outputTreeWidget.setColumnWidth(2, 10)
-        self.outputTreeWidget.setColumnWidth(3, 40)
+        self.outputTreeWidget.setColumnWidth(3, 80)
         self.outputTreeWidget.sizePolicy().setHorizontalStretch(2)
 
         innerLayout.addWidget(self.inputTreeWidget)
@@ -163,3 +163,16 @@ class ListWidget(QWidget):
         if len(self.inputEntries) > 0 and self.currentCursor.shape() == Qt.ArrowCursor:
             self.runButton.setDisabled(False)
         
+    def addFiles(self, files):
+        for i in files:
+            if i in self.links: continue
+            else: self.links.append(i)
+
+            fileName = i.split("/")[-1]
+
+            newEntry = QTreeWidgetItem(self.inputTreeWidget, [i, fileName])
+
+            self.inputEntries.append(newEntry)
+        
+        if len(self.inputEntries) > 0 and self.currentCursor.shape() == Qt.ArrowCursor:
+            self.runButton.setDisabled(False)
