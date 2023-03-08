@@ -42,7 +42,8 @@ class MainWindow(QMainWindow):
                 "Open music file/s", os.getcwd(), "Audio Files (*.mp3 *.flac)")
         self.centralWidget().addFiles(files[0])
 
-app = QApplication(sys.argv)
-window = MainWindow("0.1")
-window.show()
-app.exec()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow("0.1")
+    window.show()
+    app.exec()
