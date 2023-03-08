@@ -5,10 +5,10 @@ import os
 import inputField
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, version):
         super().__init__()
         self.app = app
-        self.setWindowTitle("Kunstzeal")
+        self.setWindowTitle(f"Kunstzeal v{version}")
         self.setWindowIcon(QIcon("icon.png"))
         self.menuBarSetup()
 
@@ -43,6 +43,6 @@ class MainWindow(QMainWindow):
         self.centralWidget().addFiles(files[0])
 
 app = QApplication(sys.argv)
-window = MainWindow()
+window = MainWindow("0.1")
 window.show()
 app.exec()

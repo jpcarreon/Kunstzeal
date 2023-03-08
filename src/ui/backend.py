@@ -171,3 +171,17 @@ def predictMusic(
     buf.close()
 
     return pred
+
+
+from mutagen.flac import FLAC
+from mutagen.mp3 import MP3
+
+def getAudioData(fp):
+    fileType = fp.split(".")[-1]
+
+    if fileType == "mp3":
+        data = MP3(fp)
+        print(data.info.bitrate // 1000)
+        print(str(data.info.bitrate_mode)[-3:])
+    
+    

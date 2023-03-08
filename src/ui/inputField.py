@@ -5,7 +5,7 @@ import threads
 from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QSplitter, \
     QTreeWidget, QTreeWidgetItem, QMenu
 from PySide6.QtCore import Qt, QEvent
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QColor
 
 class ListWidget(QWidget):
     def __init__(self):
@@ -31,12 +31,13 @@ class ListWidget(QWidget):
         self.inputTreeWidget.sizePolicy().setHorizontalStretch(1)
 
         self.outputTreeWidget = QTreeWidget()
-        self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Prediction", "Mismatch?"])
+        self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Label", "Prediction", "Mismatch?"])
         self.outputTreeWidget.hideColumn(0)
         self.outputTreeWidget.installEventFilter(self)
         self.outputTreeWidget.setColumnWidth(1, 300)
         self.outputTreeWidget.setColumnWidth(2, 10)
         self.outputTreeWidget.setColumnWidth(3, 80)
+        self.outputTreeWidget.setColumnWidth(4, 80)
         self.outputTreeWidget.sizePolicy().setHorizontalStretch(2)
 
         innerLayout.addWidget(self.inputTreeWidget)
@@ -65,12 +66,16 @@ class ListWidget(QWidget):
         fileType = fileName.split(".")[-1]
         print(f"{fileName:10s} - {data['pred']}")
 
-        QTreeWidgetItem(self.outputTreeWidget, [
+        newEntry = QTreeWidgetItem(self.outputTreeWidget, [
             data["fp"], 
             fileName, 
-            fileType, 
-            data["pred"]
+            fileType,
+            data["label"], 
+            data["pred"],
+            str(data["mismatch"])
         ])
+        if data["mismatch"]:
+            newEntry.setBackground(5, QColor(255, 0, 0, 127))
 
         self.inputTreeWidget.takeTopLevelItem(0)
         self.inputEntries.pop(0)
@@ -87,8 +92,6 @@ class ListWidget(QWidget):
         self.links.pop(self.links.index(item.text(0)))
         if item in self.inputEntries: 
             self.inputEntries.pop(self.inputEntries.index(item))
-
-        print(self.inputEntries)
         
     def runPredictions(self):
         self.runButton.setDisabled(True)
