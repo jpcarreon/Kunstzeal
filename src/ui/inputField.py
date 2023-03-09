@@ -1,11 +1,12 @@
-import os
-import torch
-import backend
-import threads
 from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QSplitter, \
     QTreeWidget, QTreeWidgetItem, QMenu
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QCursor, QColor
+import os
+import torch
+import backend
+import threads
+
 
 class ListWidget(QWidget):
     def __init__(self):
@@ -14,6 +15,8 @@ class ListWidget(QWidget):
         self.links = []
         self.inputEntries = []
         self.currentCursor = QCursor()
+
+        # loads CNN model and pretrained model; Model must correspond to the correct .pt file and vice-versa
         self.ConvNet = backend.ConvNetD()
         self.ConvNet.load_state_dict(torch.load("./D1.pt", torch.device("cpu")))
         
@@ -28,7 +31,6 @@ class ListWidget(QWidget):
         self.inputTreeWidget.setHeaderLabels(["Input Files", "Filename"])
         self.inputTreeWidget.hideColumn(1)
         self.inputTreeWidget.installEventFilter(self)
-        self.inputTreeWidget.sizePolicy().setHorizontalStretch(1)
 
         self.outputTreeWidget = QTreeWidget()
         self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Label", "Prediction", "Mismatch?"])
@@ -38,7 +40,6 @@ class ListWidget(QWidget):
         self.outputTreeWidget.setColumnWidth(2, 10)
         self.outputTreeWidget.setColumnWidth(3, 80)
         self.outputTreeWidget.setColumnWidth(4, 80)
-        self.outputTreeWidget.sizePolicy().setHorizontalStretch(2)
 
         innerLayout.addWidget(self.inputTreeWidget)
         innerLayout.addWidget(self.outputTreeWidget)
@@ -62,6 +63,11 @@ class ListWidget(QWidget):
             self.runButton.setDisabled(False)
     
     def handleThreadProgress(self, data):
+        """
+            Retrieves signal that an audio file has finished processing.
+            Moves the file from the input list to the output list and displays relevant data.
+        """
+
         fileName = data["fp"].split("/")[-1]
         fileType = fileName.split(".")[-1]
         print(f"{fileName:10s} - {data['pred']}")
@@ -77,16 +83,19 @@ class ListWidget(QWidget):
         if data["mismatch"]:
             newEntry.setBackground(5, QColor(255, 0, 0, 127))
 
+        # remove entry in the input list
         self.inputTreeWidget.takeTopLevelItem(0)
         self.inputEntries.pop(0)
 
     def handleViewSpectrogram(self, item):
+        # ensure viewing is allowed and the program is not busy
         print(f"{item.text(0)} - {item.isDisabled()}")
         if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
 
         backend.displaySpectrogram(item.text(0), item.text(1))
 
     def handleDeleteItem(self, source, item):
+        # removes item from the list
         source.takeTopLevelItem(source.indexFromItem(item).row())
         
         self.links.pop(self.links.index(item.text(0)))
@@ -94,6 +103,11 @@ class ListWidget(QWidget):
             self.inputEntries.pop(self.inputEntries.index(item))
         
     def runPredictions(self):
+        """
+            Creates a thread that will process all audio files in the input list.
+            Populates the output list once predictions are made.
+        """
+
         self.runButton.setDisabled(True)
         worker = threads.predictionWorker(self)
         worker.entries = []
@@ -111,18 +125,32 @@ class ListWidget(QWidget):
         worker.start()
         
     def checkFileFormat(self, event):
+        """
+            Checks if dragged files contain the accepted file format: mp3 or flac
+        """
         for fp in event.mimeData().urls():
             fp = fp.toString()
+            
             if fp[-3:] != "mp3" and fp[-4:] != "flac":
+                event.ignore()
+                return False
+            
+            # ignore internet links
+            elif fp[8:] == "https://" or fp[7:] == "http://":
                 event.ignore()
                 return False
         
         return True
 
     def eventFilter(self, source, event):
+        """
+            Detects right clicks in the QTreeWidget items
+        """
+
         if event.type() == QEvent.ContextMenu and \
             (source is self.inputTreeWidget or source is self.outputTreeWidget):
 
+            # check if an item is correctly highlighted
             item = source.selectedItems()
             if len(item) == 0: return False
 
@@ -149,11 +177,17 @@ class ListWidget(QWidget):
         else: event.ignore()
 
     def dropEvent(self, event):
+        """
+            Event where the file is dropped into the program
+        """
+
         if not self.checkFileFormat(event): 
             return event.ignore()
 
         for i in event.mimeData().urls():
             i = i.toLocalFile()
+
+            # ignore duplicate files
             if i in self.links: continue
             else: self.links.append(i)
 

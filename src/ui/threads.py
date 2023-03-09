@@ -3,6 +3,28 @@ from mutagen.mp3 import MP3
 from PySide6.QtCore import QThread, Signal
 
 class predictionWorker(QThread):
+    """
+        Thread to handle performing predictions.
+
+        Requires
+        ----
+        entries : list(str)
+            list of paths to audio files
+
+        net : nn.Module()
+            neural network architecture to use to predict
+
+        Signals
+        ----
+        progress : dict
+            prediction report of an audio file
+        
+        finished : int
+            determines if there an error during prediction:
+                0: error
+                1: no error
+    """
+
     progress = Signal(dict)
     finished = Signal(int)
 
@@ -25,6 +47,9 @@ class predictionWorker(QThread):
             self.finished.emit(1)
     
     def checkMismatch(self, fp, pred):
+        """
+            Checks for a mismatch between the predicted label and the audio label.
+        """
         fileType = fp.split(".")[-1]
 
         if fileType == "mp3":
@@ -44,6 +69,10 @@ class predictionWorker(QThread):
         return (label, mismatch)
 
 class spectrogramWorker(QThread):
+    """
+        Thread to handle displaying spectrograms.
+        Unused.
+    """
     finished = Signal(int)
 
     def run(self):
