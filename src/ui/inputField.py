@@ -15,7 +15,7 @@ class ListWidget(QWidget):
         self.inputEntries = []
         self.currentCursor = QCursor()
         self.ConvNet = backend.ConvNetD()
-        self.ConvNet.load_state_dict(torch.load("./D1.pt"))
+        self.ConvNet.load_state_dict(torch.load("./D1.pt", torch.device("cpu")))
         
         mainLayout = QVBoxLayout()
         innerLayout = QSplitter()
