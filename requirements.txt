@@ -1,0 +1,11 @@
+torch 
+torchvision 
+opencv-python 
+mutagen
+seaborn
+pandas
+pyside6~=6.4.2 
+matplotlib~=3.7.0 
+librosa~=0.10.0 
+pillow~=9.4.0 
+numpy==1.23.5 
