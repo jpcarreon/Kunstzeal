@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import librosa
+from librosa.display import specshow
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from librosa.display import specshow
 from cv2 import imread
 
 
@@ -59,6 +59,7 @@ classification = {
     3: "192K", 4: "128K"
 }
 
+# custom colormap to mimic the colors of spek (https://github.com/alexkay/spek)
 spek_cmap = mpl.colors.LinearSegmentedColormap.from_list(
     "spek",
     ["black", "indigo", "blue", "cyan", "chartreuse", "yellow", "orange", "red"]
@@ -66,6 +67,35 @@ spek_cmap = mpl.colors.LinearSegmentedColormap.from_list(
 
 
 def __loadAudioFile(filepath, n_fft, win_size, hop_size, amin, top_db):
+    """
+        Loads an audio file and returns the data represented in dB and its sampling rate.
+        Relies on librosa to perform short-time fourier transform and the conversion of amplitude to dB
+
+        Parameters
+        ----
+        filepath : str
+            path to the audio file
+        
+        n_fft : int > 0
+        
+        win_size : int <= n_fft
+        
+        hop_size : int > 0
+        
+        amin : float > 0
+
+        top_db : float >= 0
+
+        Returns
+        ----
+        dB : np.ndarray
+            converted amplitude of input audio file
+
+        sr : int
+            sampling rate of input audio file
+    """
+
+    # specify sr=None to preserve correct sampling rate
     amp, sr = librosa.load(filepath, sr=None)
     stft = librosa.stft(
         amp,
@@ -94,6 +124,39 @@ def saveSpectrogram(
     size_x=2.56,
     size_y=2.56
 ):
+    """
+        Takes a single audio file and saves the spectrogram representation to the output path given.
+        Relies on librosa to convert the audio file and matplotlib to output the figure.
+
+        Parameters
+        ----
+        filepath : str
+            path to the audio file
+        
+        outputpath: str
+            path to save the generated spectrogram
+        
+        n_fft : int > 0
+        
+        win_size : int <= n_fft
+        
+        hop_size : int > 0
+        
+        amin : float > 0
+
+        top_db : float >= 0
+
+        size_x : int > 0
+            width * 100 of the spectrogram
+        
+        size_y : int > 0
+            height * 100 of the spectrogram
+
+        Returns 
+        ----
+        None
+    """
+
     dB, sr = __loadAudioFile(filepath, n_fft, win_size, hop_size, amin, top_db)
 
     fig, ax = plt.subplots(figsize=(size_x, size_y))
@@ -121,6 +184,39 @@ def displaySpectrogram(
     size_x=10,
     size_y=6
 ):
+    """
+        Takes a single audio file and displays the spectrogram.
+        Relies on librosa to convert the audio file and matplotlib to show the figure.
+
+        Parameters
+        ----
+        filepath : str
+            path to the audio file
+
+        filename: str
+            title to display on the figure
+            
+        n_fft : int > 0
+        
+        win_size : int <= n_fft
+        
+        hop_size : int > 0
+        
+        amin : float > 0
+
+        top_db : float >= 0
+
+        size_x : int > 0
+            width * 100 of the spectrogram
+        
+        size_y : int > 0
+            height * 100 of the spectrogram
+
+        Returns 
+        ----
+        None
+    """
+
     dB, sr = __loadAudioFile(filepath, n_fft, win_size, hop_size, amin, top_db)
 
     fig, ax = plt.subplots(figsize=(size_x, size_y))
@@ -146,6 +242,41 @@ def predictMusic(
     size_x=2.56,
     size_y=2.56
 ):
+    """
+        Takes a single audio file and converts it to a spectrogram to make a prediction using the given neural network.
+        Relies of librosa to convert the audio file and matplotlib to save the spectrogram
+
+        Parameters
+        ----
+        filepath : str
+            path to the audio file
+
+        net : nn.Module()
+            neural network architecture to use to predict
+        
+        n_fft : int > 0
+        
+        win_size : int <= n_fft
+        
+        hop_size : int > 0
+        
+        amin : float > 0
+
+        top_db : float >= 0
+
+        size_x : int > 0
+            width * 100 of the spectrogram
+        
+        size_y : int > 0
+            height * 100 of the spectrogram
+
+        Returns 
+        ----
+        pred : str
+            prediction the neural network made from the spectrogram
+            possible values: ("FLAC", "V0", "320K", "192K", "128K")
+    """
+    
     dB, sr = __loadAudioFile(filepath, n_fft, win_size, hop_size, amin, top_db)
 
     fig, ax = plt.subplots(figsize=(size_x, size_y))
@@ -163,6 +294,7 @@ def predictMusic(
     plt.close('all')
     gc.collect()
 
+    # save figure as a temporary file to make a prediction
     with tempfile.NamedTemporaryFile(mode="wb") as fp:
         fp.write(buf.getvalue())
 
@@ -171,17 +303,3 @@ def predictMusic(
     buf.close()
 
     return pred
-
-
-from mutagen.flac import FLAC
-from mutagen.mp3 import MP3
-
-def getAudioData(fp):
-    fileType = fp.split(".")[-1]
-
-    if fileType == "mp3":
-        data = MP3(fp)
-        print(data.info.bitrate // 1000)
-        print(str(data.info.bitrate_mode)[-3:])
-    
-    
