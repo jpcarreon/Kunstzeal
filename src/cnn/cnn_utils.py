@@ -9,6 +9,7 @@ from cv2 import imread
 
 
 class SpectrogramDataset(Dataset):
+    # custom dataset to load spectrogram data
     def __init__(self, csv_file, root_dir, transform=None):
         self.labels = pd.read_csv(csv_file)
         self.root_dir = root_dir
@@ -30,10 +31,40 @@ class SpectrogramDataset(Dataset):
         return (image, y_label)
 
     def getItemLabel(self, index):
+        """
+            Takes the true label of the item at the given index
+            
+            Returns
+            ----
+            label : str
+                the true label represented by one of the possible strings: ("FLAC", "V0", "320K", "192K", "128K")
+        """
         return self.labels.iloc[index, 1]
 
 
-def get_all_preds(net, loader, classes, printAcc=False):
+def get_all_preds(net, loader, classes, printAcc=True):
+    """
+        Runs the batch of data with the neural network provided. 
+        Returns the predictions and prints accuracy results if specified.
+
+        Parameters
+        ----
+        net : nn.Module()
+            neural network architecture to use to predict
+
+        loader : torch.utils.data.DataLoader
+        
+        classes : set
+            set of possible classification targets
+        
+        printAcc : bool
+            flag used to determine if printing accuracy is necessary
+        
+        Returns
+        ----
+        all_preds : torch.tensor
+            tensor containing predictions of the given data
+    """
     all_preds = torch.tensor([])
     correct_pred = {classname: 0 for classname in classes}
     total_pred = {classname: 0 for classname in classes}
@@ -47,6 +78,7 @@ def get_all_preds(net, loader, classes, printAcc=False):
             dim=0
         )
 
+        # record total number of predictions and number of correct predictions
         for label, predictions in zip(labels, torch.max(preds, 1)[1]):
             if label == predictions:
                 correct_pred[classes[label]] += 1
@@ -62,6 +94,21 @@ def get_all_preds(net, loader, classes, printAcc=False):
 
 
 def displayProgress(progress, total, loss, rloss, scale=30):
+    """
+        Displays a progress bar depending on the data given.
+
+        Parameters
+        ----
+        progress : int
+
+        total : int
+
+        loss : float
+
+        rloss : float
+
+        scale : int > 0
+    """
     current = int(scale * (progress / float(total)))
     bar = "█" * current + "-" * (scale - current)
 
@@ -70,6 +117,14 @@ def displayProgress(progress, total, loss, rloss, scale=30):
 
 
 def dictCounter(array):
+    """
+        Utility function to count the frequency of data inside an array/list
+
+        Returns
+        ----
+        counter : dict
+            contains the frequency count of each element from the array/list
+    """
     counter = {}
     for i in array:
         counter[i] = counter.get(i, 0) + 1
@@ -78,6 +133,9 @@ def dictCounter(array):
 
 
 def imshow(img):
+    """
+        Display image using matplotlib
+    """
     img = img / 2 + 0.5  # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
@@ -85,6 +143,9 @@ def imshow(img):
 
 
 def viewRandomSample(data_loader, classes, batch_size):
+    """
+        Take random images from dataloader and display them
+    """
     # get some random training images
     dataiter = iter(data_loader)
     images, labels = next(dataiter)
@@ -95,7 +156,10 @@ def viewRandomSample(data_loader, classes, batch_size):
 
 
 def stratifiedSampling(dataset, k):
-    # broken rn
+    """
+       Takes k samples of each classification from the dataset.
+       Current broken.
+    """
     class_counts = {}
     train_data = []
     train_label = []

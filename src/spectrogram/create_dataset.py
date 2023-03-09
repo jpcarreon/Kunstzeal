@@ -1,3 +1,18 @@
+"""
+    Script used to generate spectrogram datasets.
+    Requires a specific folder structure:
+    root/ 
+        - input/
+            - FLAC/
+            - V0/
+            - 320K/
+            - 192K/
+            - 128K/    
+        - output/
+    
+    The output will contain a spectrograms folder and spectral_record.csv
+"""
+
 import os
 import spectrogram as sg
 
@@ -10,6 +25,7 @@ classification = {
 inputPath = "./input"
 outputPath = "./output"
 
+# Create spectrograms folder if it doesn't exist
 if not os.path.exists(os.path.join(outputPath, "spectrograms")):
     os.makedirs(os.path.join(outputPath, "spectrograms"))
 
@@ -24,6 +40,7 @@ for folder in os.listdir(inputPath):
         currentFile = os.path.join(inputPath, folder, fp)
         savePath = os.path.join(outputPath, "spectrograms", f"{folder}_{counter}.png")
 
+        # generate spectrogram
         sg.saveSpectrogram(currentFile, savePath, size_x=2.56, size_y=2.56)
         dataset_csv.write(f"{folder}_{counter}.png, {classification[folder]}\n")
 

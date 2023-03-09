@@ -17,13 +17,13 @@ class ConvNetD(nn.Module):
     def __init__(self):
         super().__init__()
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv1 = nn.Conv2d(3, 64, 5, 1)
-        self.conv2 = nn.Conv2d(64, 128, 5, 1)
-        self.conv3 = nn.Conv2d(128, 256, 3, 1)
-        self.conv4 = nn.Conv2d(256, 512, 3, 1)
-        self.conv5 = nn.Conv2d(512, 512, 3, 1)
+        self.conv1 = nn.Conv2d(3, 64, 5, 1)         # 5x5 kernel with stride of 1; Outputs 64 features
+        self.conv2 = nn.Conv2d(64, 128, 5, 1)       # 5x5 kernel with stride of 1; Outputs 128 features
+        self.conv3 = nn.Conv2d(128, 256, 3, 1)      # 3x3 kernel with stride of 1; Outputs 256 features
+        self.conv4 = nn.Conv2d(256, 512, 3, 1)      # 3x3 kernel with stride of 1; Outputs 512 features
+        self.conv5 = nn.Conv2d(512, 512, 3, 1)      # 3x3 kernel with stride of 1; Outputs 512 features
 
-        # Result of 3rd max pooling is 28x28x32 images; thus fc layer has 28*28*32 neurons
+        # Result of last max pooling is 5*5*512 images; thus fc layer accepts 5*5*512 neurons
         self.fc1 = nn.Linear(5*5*512, 256)
         self.fc2 = nn.Linear(256, 256)
         self.fc3 = nn.Linear(256, 5)
@@ -31,23 +31,39 @@ class ConvNetD(nn.Module):
     def forward(self, x):
         # input data -> 3, 256, 256
         #               channels, width, length
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
-        x = self.pool(F.relu(self.conv4(x)))
-        x = self.pool(F.relu(self.conv5(x)))
+        x = self.pool(F.relu(self.conv1(x)))        # input -> maxpool(conv1(x)) : 126x126x64
+        x = self.pool(F.relu(self.conv2(x)))        # input -> maxpool(conv2(x)) : 61x61x128
+        x = self.pool(F.relu(self.conv3(x)))        # input -> maxpool(conv3(x)) : 29x29x256
+        x = self.pool(F.relu(self.conv4(x)))        # input -> maxpool(conv4(x)) : 13x13x512
+        x = self.pool(F.relu(self.conv5(x)))        # input -> maxpool(conv5(x)) : 5x5x512
 
-        x = torch.flatten(x, 1)               # flatten -> 25088
-        x = F.relu(self.fc1(x))               # fc layer 1 -> 128
-        x = F.relu(self.fc2(x))               # fc layer 2 -> 128
+        x = torch.flatten(x, 1)               # flatten -> 12800
+        x = F.relu(self.fc1(x))               # fc layer 1 -> 256
+        x = F.relu(self.fc2(x))               # fc layer 2 -> 256
         x = self.fc3(x)                       # fc layer 3 -> 5
         return x
 
     def predictSingle(self, input):
+        """
+            Perform a single prediction from a given image input.
+
+            Parameters
+            ----
+            input : str
+                path to a spectrogram image
+            
+            Returns
+            ----
+            pred : str
+
+        """
+
         conv_img = transforms.ToTensor()
 
         with torch.no_grad():
             img = conv_img(imread(input))
+            
+            # put image in a single batch to predict
             pred = self(torch.stack([img]))
             pred = torch.max(pred, 1)[1].item()
 

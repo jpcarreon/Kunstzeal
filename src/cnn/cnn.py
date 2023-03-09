@@ -20,10 +20,11 @@ classes = ("FLAC", "V0", "320K", "192K", "128K")
 dataset = cnn_utils.SpectrogramDataset(
     "./data/dataset_3110/spectral_record.csv", "./data/dataset_3110/spectrograms/", transforms.ToTensor())
 
+# split data for 80% training and 20% testing
 train_size = int(dataset.__len__() * 0.8)
-
 train_set, test_set = torch.utils.data.random_split(
     dataset, [train_size, dataset.__len__() - train_size])
+
 train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size,
                                            shuffle=True, num_workers=2)
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
@@ -40,6 +41,7 @@ optimizer = torch.optim.SGD(
 totalSteps = len(train_loader)
 step_size = ((len(train_set) + 1) // batch_size) // 4
 
+# Run training
 for epoch in range(num_epochs):
     running_loss = 0.0
 
@@ -50,12 +52,15 @@ for epoch in range(num_epochs):
 
         optimizer.zero_grad()
 
+        # forward pass
         outputs = net(inputs)
         loss = criterion(outputs, labels)
 
+        # backpropagation
         loss.backward()
         optimizer.step()
 
+        # calculate and print error rates
         running_loss += loss.item()
         cnn_utils.displayProgress(
             i + 1, totalSteps, running_loss / step_size, running_loss)
@@ -70,10 +75,12 @@ torch.save(net.state_dict(), "./spectral_net.pt")
 
 net_test.load_state_dict(torch.load("./spectral_net.pt"))
 
+# perform accuracy testing
 with torch.no_grad():
-    train_preds = cnn_utils.get_all_preds(net_test, test_loader, classes, True)
+    train_preds = cnn_utils.get_all_preds(net_test, test_loader, classes)
     test_targets = [dataset.getItemLabel(i) for i in test_set.indices]
 
+    # stack predictions and true labels in an array
     stacked = torch.stack(
         (
             torch.tensor(test_targets),
@@ -82,8 +89,8 @@ with torch.no_grad():
         dim=1
     )
 
+    # construct confustion matrix
     cm = torch.zeros(5, 5, dtype=torch.int32)
-
     for p in stacked:
         j, k = p.tolist()
         cm[j, k] += 1
