@@ -2,6 +2,7 @@ __pycache__/
 .tours/
 input/
 output/
-test.py
 data/
+dist/
+test.py
 *.pt
