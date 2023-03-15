@@ -40,6 +40,7 @@ optimizer = torch.optim.SGD(
 
 totalSteps = len(train_loader)
 step_size = ((len(train_set) + 1) // batch_size) // 4
+rLossRecord = []
 
 # Run training
 for epoch in range(num_epochs):
@@ -63,11 +64,12 @@ for epoch in range(num_epochs):
         # calculate and print error rates
         running_loss += loss.item()
         cnn_utils.displayProgress(
-            i + 1, totalSteps, running_loss / step_size, running_loss)
+            i + 1, totalSteps, loss.item(), running_loss)
 
-        if (i + 1) % step_size == 0:
-            running_loss = 0.0
+        #if (i + 1) % step_size == 0:
+        #    running_loss = 0.0
 
+    rLossRecord.append(running_loss)
     print()
 
 print("Finished Training\n\n")
@@ -110,3 +112,8 @@ with torch.no_grad():
         plt.tight_layout()
 
         plt.show()
+
+
+with open("./net_loss.csv", "w") as fp:
+    for i, loss in enumerate(rLossRecord):
+        fp.write(f"{i + 1},{loss}\n")
