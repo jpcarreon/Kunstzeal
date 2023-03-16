@@ -1,6 +1,4 @@
 import gc
-import io
-import tempfile
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -11,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from cv2 import imread
+from random import randint
 
 
 class ConvNetD(nn.Module):
@@ -302,20 +301,15 @@ def predictMusic(
     plt.axis("off")
     fig.tight_layout(pad=0)
 
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png")
+    # save spectrogram with randomized filename
+    outputPath = f"./lib/tmp/{randint(100, 999)}.png"
+    plt.savefig(outputPath)
 
     # clear figure and reclaim memory
     plt.clf()
     plt.close('all')
     gc.collect()
 
-    # save figure as a temporary file to make a prediction
-    with tempfile.NamedTemporaryFile(mode="wb") as fp:
-        fp.write(buf.getvalue())
-
-        pred = net.predictSingle(fp.name)
-        
-    buf.close()
+    pred = net.predictSingle(outputPath)
 
     return pred

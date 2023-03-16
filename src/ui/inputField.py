@@ -109,6 +109,10 @@ class ListWidget(QWidget):
         """
 
         self.runButton.setDisabled(True)
+
+        # create tmp folder to store temporary spectrograms
+        os.makedirs("./lib/tmp/", exist_ok=True)
+
         worker = threads.predictionWorker(self)
         worker.entries = []
         worker.net = self.ConvNet
