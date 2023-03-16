@@ -4,6 +4,7 @@ opencv-python
 mutagen
 seaborn
 pandas
+cx_freeze
 pyside6~=6.4.2 
 matplotlib~=3.7.0 
 librosa~=0.10.0 
