@@ -30,16 +30,18 @@ class predictionWorker(QThread):
 
     def run(self):
         try:
-            for fp in self.entries:
-                pred = backend.predictMusic(fp, self.net)
+            for i, fp in enumerate(self.entries):
+                if self.isInterruptionRequested(): break
 
+                pred = backend.predictMusic(fp, self.net)
                 label, mismatch = self.checkMismatch(fp, pred)
                 
                 self.progress.emit({
                     "fp": fp,
                     "pred": pred,
                     "label": label,
-                    "mismatch": mismatch
+                    "mismatch": mismatch,
+                    "progress": int(100 * ((i + 1) / len(self.entries)))
                 })
         except:
             self.finished.emit(0)

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QSplitter, \
-    QTreeWidget, QTreeWidgetItem, QMenu
+    QTreeWidget, QTreeWidgetItem, QMenu, QProgressDialog
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QCursor, QColor
 import os
@@ -14,6 +14,7 @@ class ListWidget(QWidget):
         self.setAcceptDrops(True)
         self.links = []
         self.inputEntries = []
+        self.threads = []
         self.currentCursor = QCursor()
 
         # loads CNN model and pretrained model; Model must correspond to the correct .pt file and vice-versa
@@ -61,6 +62,13 @@ class ListWidget(QWidget):
         
         if len(self.inputEntries) > 0:
             self.runButton.setDisabled(False)
+
+            for i in self.inputEntries:
+                i.setDisabled(False)
+        
+        # remove finished thread and shutdown progress dialog
+        self.threads.pop(0)
+        self.pd.close()
     
     def handleThreadProgress(self, data):
         """
@@ -82,10 +90,18 @@ class ListWidget(QWidget):
         ])
         if data["mismatch"]:
             newEntry.setBackground(5, QColor(255, 0, 0, 127))
+        
+        # update progress bar
+        self.pd.setValue(data["progress"])
 
         # remove entry in the input list
         self.inputTreeWidget.takeTopLevelItem(0)
         self.inputEntries.pop(0)
+    
+    def handleCancelProgress(self):
+        # Request an interruption from currently running threads
+        for i in self.threads:
+            i.requestInterruption()
 
     def handleViewSpectrogram(self, item):
         # ensure viewing is allowed and the program is not busy
@@ -107,7 +123,7 @@ class ListWidget(QWidget):
             Creates a thread that will process all audio files in the input list.
             Populates the output list once predictions are made.
         """
-
+        self.pd = QProgressDialog("Kunstzeal", "Cancel", 0, 100)
         self.runButton.setDisabled(True)
 
         # create tmp folder to store temporary spectrograms
@@ -121,12 +137,20 @@ class ListWidget(QWidget):
         worker.finished.connect(self.handleThreadFinish)
         worker.finished.connect(worker.deleteLater)
 
+        self.pd.canceled.connect(self.handleCancelProgress)
+        self.pd.setWindowTitle("Predicting inputs...")
+        self.pd.setWindowFlag(Qt.CustomizeWindowHint, True)
+        self.pd.setWindowFlag(Qt.WindowCloseButtonHint, False)
+
         for i in self.inputEntries:
             worker.entries.append(i.text(0))
             i.setDisabled(True)
         
         self.changeCursor(Qt.WaitCursor)
+        self.threads.append(worker)
+
         worker.start()
+        self.pd.show()
         
     def checkFileFormat(self, event):
         """
