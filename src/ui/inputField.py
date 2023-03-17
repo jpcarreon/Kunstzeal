@@ -12,7 +12,7 @@ class ListWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.setAcceptDrops(True)
-        self.links = []
+        self.links = []  # records filepaths already in the program
         self.inputEntries = []
         self.threads = []
         self.currentCursor = QCursor()
@@ -123,7 +123,7 @@ class ListWidget(QWidget):
             Creates a thread that will process all audio files in the input list.
             Populates the output list once predictions are made.
         """
-        self.pd = QProgressDialog("Kunstzeal", "Cancel", 0, 100)
+        self.pd = QProgressDialog("Predicting inputs...", "Cancel", 0, 100)
         self.runButton.setDisabled(True)
 
         # create tmp folder to store temporary spectrograms
@@ -138,7 +138,7 @@ class ListWidget(QWidget):
         worker.finished.connect(worker.deleteLater)
 
         self.pd.canceled.connect(self.handleCancelProgress)
-        self.pd.setWindowTitle("Predicting inputs...")
+        self.pd.setWindowTitle(" ")
         self.pd.setWindowFlag(Qt.CustomizeWindowHint, True)
         self.pd.setWindowFlag(Qt.WindowCloseButtonHint, False)
 
@@ -227,7 +227,22 @@ class ListWidget(QWidget):
 
         if len(self.inputEntries) > 0 and self.currentCursor.shape() == Qt.ArrowCursor:
             self.runButton.setDisabled(False)
-        
+
+    def clearInputList(self):
+        # iterate through the number of qtreewidgetitems in the input list
+        for _ in range(self.inputTreeWidget.topLevelItemCount()):
+            item = self.inputTreeWidget.takeTopLevelItem(0)
+            self.links.pop(self.links.index(item.text(0)))
+            self.inputEntries.pop(self.inputEntries.index(item))
+            
+        self.runButton.setDisabled(True)
+
+    def clearOutputList(self):
+        # iterate through the number of qtreewidgetitems in the output list
+        for _ in range(self.outputTreeWidget.topLevelItemCount()):
+            item = self.outputTreeWidget.takeTopLevelItem(0)
+            self.links.pop(self.links.index(item.text(0)))
+
     def addFiles(self, files):
         for i in files:
             if i in self.links: continue

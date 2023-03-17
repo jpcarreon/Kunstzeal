@@ -32,6 +32,8 @@ class predictionWorker(QThread):
         try:
             for i, fp in enumerate(self.entries):
                 if self.isInterruptionRequested(): break
+                
+                #self.quickProcess(fp, i); continue
 
                 pred = backend.predictMusic(fp, self.net)
                 label, mismatch = self.checkMismatch(fp, pred)
@@ -48,6 +50,26 @@ class predictionWorker(QThread):
         else:
             self.finished.emit(1)
     
+    def quickProcess(self, fp, i):
+        """
+            Used for debugging. Sends a dummy progress signal
+
+            Parameters
+            ----
+            fp: str
+                filepath processed
+
+            i: int
+                index of the current file
+        """
+        self.progress.emit({
+            "fp": fp,
+            "pred": "V0",
+            "label": "V0",
+            "mismatch": False,
+            "progress": int(100 * ((i + 1) / len(self.entries)))
+        })
+
     def checkMismatch(self, fp, pred):
         """
             Checks for a mismatch between the predicted label and the audio label.

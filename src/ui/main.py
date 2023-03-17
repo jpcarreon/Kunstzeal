@@ -27,6 +27,8 @@ class MainWindow(QMainWindow):
         help_menu = menu_bar.addMenu("Help")
 
         file_menu.addAction("Open").triggered.connect(self.openFileDialog)
+        file_menu.addAction("Clear Input").triggered.connect(self.clearInputList)
+        file_menu.addAction("Clear Output").triggered.connect(self.clearOutputList)
         file_menu.addSeparator()
         file_menu.addAction("Quit").triggered.connect(self.app.quit)
         
@@ -56,6 +58,39 @@ class MainWindow(QMainWindow):
         files = QFileDialog.getOpenFileNames(self, 
                 "Open music file/s", os.getcwd(), "Audio Files (*.mp3 *.flac)")
         self.centralWidget().addFiles(files[0])
+
+    def clearInputList(self):
+        """
+            Displays a confirmation box if clearing should continue.
+            Calls function inside inputField to clear input list if affirmative
+        """
+        confirmBox = QMessageBox()
+        confirmBox.setIcon(QMessageBox.Question)
+        confirmBox.setWindowTitle("Confirm action")
+        confirmBox.setText("Are you sure you want to clear the input list?")
+        confirmBox.setStandardButtons(QMessageBox.No| QMessageBox.Yes)
+        confirmBox.setDefaultButton(QMessageBox.No)
+
+        ret = confirmBox.exec()
+        if ret == QMessageBox.Yes:
+            self.centralWidget().clearInputList()
+    
+    def clearOutputList(self):
+        """
+            Displays a confirmation box if clearing should continue.
+            Calls function inside inputField to clear output list if affirmative
+        """
+        confirmBox = QMessageBox()
+        confirmBox.setIcon(QMessageBox.Question)
+        confirmBox.setWindowTitle("Confirm action")
+        confirmBox.setText("Are you sure you want to clear the output list?")
+        confirmBox.setStandardButtons(QMessageBox.No| QMessageBox.Yes)
+        confirmBox.setDefaultButton(QMessageBox.No)
+
+        ret = confirmBox.exec()
+        if ret == QMessageBox.Yes:
+            self.centralWidget().clearOutputList()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
