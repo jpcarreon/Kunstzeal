@@ -10,7 +10,7 @@ class MainWindow(QMainWindow):
         self.app = app
         self.version = version
         self.setWindowTitle(f"Kunstzeal v{version}")
-        self.setWindowIcon(QIcon("icon.png"))
+        self.setWindowIcon(QIcon("icon.ico"))
         self.menuBarSetup()
 
         self.setMinimumSize(1000, 600)

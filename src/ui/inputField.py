@@ -36,10 +36,10 @@ class ListWidget(QWidget):
         self.outputTreeWidget.setHeaderLabels(["path", "Filename", "Format", "Label", "Prediction", "Mismatch?"])
         self.outputTreeWidget.hideColumn(0)
         self.outputTreeWidget.installEventFilter(self)
-        self.outputTreeWidget.setColumnWidth(1, 300)
-        self.outputTreeWidget.setColumnWidth(2, 10)
-        self.outputTreeWidget.setColumnWidth(3, 80)
-        self.outputTreeWidget.setColumnWidth(4, 80)
+        self.outputTreeWidget.setColumnWidth(1, 300)    # filename
+        self.outputTreeWidget.setColumnWidth(2, 60)     # format
+        self.outputTreeWidget.setColumnWidth(3, 80)     # label
+        self.outputTreeWidget.setColumnWidth(4, 80)     # prediction
 
         innerLayout.addWidget(self.inputTreeWidget)
         innerLayout.addWidget(self.outputTreeWidget)
