@@ -139,6 +139,7 @@ class ListWidget(QWidget):
 
         self.pd.canceled.connect(self.handleCancelProgress)
         self.pd.setWindowTitle(" ")
+        self.pd.setValue(0)
         self.pd.setWindowFlag(Qt.CustomizeWindowHint, True)
         self.pd.setWindowFlag(Qt.WindowCloseButtonHint, False)
 
