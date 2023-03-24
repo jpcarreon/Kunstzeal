@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QSplitter, \
     QTreeWidget, QTreeWidgetItem, QMenu, QProgressDialog
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QCursor, QColor
-import os
+import os, sys, subprocess
 import torch
 import backend
 import threads
@@ -103,12 +103,35 @@ class ListWidget(QWidget):
         for i in self.threads:
             i.requestInterruption()
 
+    def handlePlayAudio(self, item):
+        """
+            Opens the folder where the selected file is located.
+            Utilizes different methods depending on OS
+        """
+
+        if sys.platform == "win32":
+            os.startfile(item.text(0))
+        else:
+            subprocess.call(["xdg-open", item.text(0)])
+
     def handleViewSpectrogram(self, item):
         # ensure viewing is allowed and the program is not busy
         print(f"{item.text(0)} - {item.isDisabled()}")
         if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
 
         backend.displaySpectrogram(item.text(0), item.text(1))
+
+    def handleOpenFolder(self, item):
+        """
+            Opens the folder where the selected file is located.
+            Utilizes different methods depending on OS
+        """
+        folderPath = "/".join(item.text(0).split("/")[:-1])
+
+        if sys.platform == "win32":
+            os.startfile(folderPath)
+        else:
+            subprocess.call(["xdg-open", folderPath])
 
     def handleDeleteItem(self, source, item):
         # removes item from the list
@@ -184,8 +207,13 @@ class ListWidget(QWidget):
             if len(item) == 0: return False
 
             contextMenu = QMenu()
+
+            contextMenu.addAction("Play").triggered.connect(
+                lambda _: self.handlePlayAudio(item[0]))
             contextMenu.addAction("View Spectrogram").triggered.connect(
                 lambda _: self.handleViewSpectrogram(item[0]))
+            contextMenu.addAction("Open File Folder").triggered.connect(
+                lambda _: self.handleOpenFolder(item[0]))
             contextMenu.addAction("Remove").triggered.connect(
                 lambda _: self.handleDeleteItem(source, item[0]))
             
