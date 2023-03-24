@@ -1,11 +1,25 @@
 import sys
 from cx_Freeze import setup, Executable
 
+try:
+    from cx_Freeze.hooks import get_qt_plugins_paths
+except ImportError:
+    get_qt_plugins_paths = None
+
+include_files = ["./D1.pt", "./icon.ico"]
+if get_qt_plugins_paths:
+    for plugin_name in (
+        "wayland-decoration-client",
+        "wayland-graphics-integration-client",
+        "wayland-shell-integration",
+    ):
+        include_files += get_qt_plugins_paths("PySide6", plugin_name)
+
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
     "packages": ["librosa"],
     "zip_include_packages": ["PySide6"],
-    "include_files": ["./D1.pt", "./icon.ico"],
+    "include_files": include_files,
     "include_msvcr": True,
 }
 
