@@ -94,6 +94,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow("1.1")
+    window = MainWindow("1.2")
     window.show()
     app.exec()
