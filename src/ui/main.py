@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
         aboutBox = QMessageBox()
         aboutBox.setIcon(QMessageBox.Information)
         aboutBox.setWindowTitle("About")
+        aboutBox.setWindowIcon(QIcon("icon.ico"))
         aboutBox.setText(f"Kunstzeal v{self.version}\
             \n\nKunstzeal is a program used to aid users in spectral/spectrogram analysis. Spectral analysis is commonly employed to detect improperly transcoded music files.\
             \n\nKunstzeal uses a pretrained CNN model to classify music files you input. Currently, the model is correct 97% of the time.\
@@ -67,6 +68,7 @@ class MainWindow(QMainWindow):
         confirmBox = QMessageBox()
         confirmBox.setIcon(QMessageBox.Question)
         confirmBox.setWindowTitle("Confirm action")
+        confirmBox.setWindowIcon(QIcon("icon.ico"))
         confirmBox.setText("Are you sure you want to clear the input list?")
         confirmBox.setStandardButtons(QMessageBox.No| QMessageBox.Yes)
         confirmBox.setDefaultButton(QMessageBox.No)
@@ -83,6 +85,7 @@ class MainWindow(QMainWindow):
         confirmBox = QMessageBox()
         confirmBox.setIcon(QMessageBox.Question)
         confirmBox.setWindowTitle("Confirm action")
+        confirmBox.setWindowIcon(QIcon("icon.ico"))
         confirmBox.setText("Are you sure you want to clear the output list?")
         confirmBox.setStandardButtons(QMessageBox.No| QMessageBox.Yes)
         confirmBox.setDefaultButton(QMessageBox.No)
