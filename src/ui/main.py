@@ -4,18 +4,29 @@ import sys
 import os
 import inputField
 
+import sys; sys.path.append('../')
+import spectrogram.classifier as models
+
 class MainWindow(QMainWindow):
-    def __init__(self, version):
+    params = {
+        "version": "1.2.1",
+        "model": models.ConvNetD(),
+        "pt": "./D1.pt"
+    }
+    
+    def __init__(self):
         super().__init__()
         self.app = app
-        self.version = version
-        self.setWindowTitle(f"Kunstzeal v{version}")
+        self.setWindowTitle(f"Kunstzeal v{self.params['version']}")
         self.setWindowIcon(QIcon("icon.ico"))
         self.menuBarSetup()
 
         self.setMinimumSize(1000, 600)
 
-        self.setCentralWidget(inputField.ListWidget())
+        self.setCentralWidget(inputField.ListWidget(
+            self.params["model"], 
+            self.params["pt"]
+        ))
 
     def menuBarSetup(self):
         """
@@ -43,7 +54,7 @@ class MainWindow(QMainWindow):
         aboutBox.setIcon(QMessageBox.Information)
         aboutBox.setWindowTitle("About")
         aboutBox.setWindowIcon(QIcon("icon.ico"))
-        aboutBox.setText(f"Kunstzeal v{self.version}\
+        aboutBox.setText(f"Kunstzeal v{self.params['version']}\
             \n\nKunstzeal is a program used to aid users in spectral/spectrogram analysis. Spectral analysis is commonly employed to detect improperly transcoded music files.\
             \n\nKunstzeal uses a pretrained CNN model to classify music files you input. Currently, the model is correct 97% of the time.\
             \n\nRepo: https://github.com/jpcarreon/Kunstzeal \
@@ -97,6 +108,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow("1.2")
+    window = MainWindow()
     window.show()
     app.exec()

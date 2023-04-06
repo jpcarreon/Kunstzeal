@@ -11,7 +11,7 @@ import spectrogram as sg
 import spectrogram.classifier as models
 
 class ListWidget(QWidget):
-    def __init__(self):
+    def __init__(self, model, pt):
         super().__init__()
         self.setAcceptDrops(True)
         self.links = []  # records filepaths already in the program
@@ -20,8 +20,8 @@ class ListWidget(QWidget):
         self.currentCursor = QCursor()
 
         # loads CNN model and pretrained model; Model must correspond to the correct .pt file and vice-versa
-        self.ConvNet = models.ConvNetD()
-        self.ConvNet.load_state_dict(torch.load("./D1.pt", torch.device("cpu")))
+        self.ConvNet = model
+        self.ConvNet.load_state_dict(torch.load(pt, torch.device("cpu")))
         
         mainLayout = QVBoxLayout()
         innerLayout = QSplitter()

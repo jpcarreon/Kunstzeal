@@ -28,7 +28,7 @@ base = "Win32GUI" if sys.platform == "win32" else None
 
 setup(
     name="Kunstzeal",
-    version="1.0",
+    version="1.2.1",
     description="Kunstzeal",
     options={"build_exe": build_exe_options},
     executables=[
