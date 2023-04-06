@@ -8,4 +8,4 @@
         :mod: `spectrogram.utils`
             miscellaneous classes/functions storage
 """
-from spectrogram import *
+from .spectrogram import *

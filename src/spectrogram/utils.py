@@ -93,7 +93,7 @@ def get_all_preds(net, loader, classes, printAcc=True):
     return all_preds
 
 
-def displayProgress(progress, total, loss, rloss, scale=30):
+def displayProgress(progress, total, loss=-1, rloss=-1, scale=30):
     """
         Displays a progress bar depending on the data given.
 
@@ -112,8 +112,12 @@ def displayProgress(progress, total, loss, rloss, scale=30):
     current = int(scale * (progress / float(total)))
     bar = "█" * current + "-" * (scale - current)
 
-    print(
-        f"\r  │{bar}│ Step {progress:3d}/{total:<3d} │ Loss: {loss:.5f} RLoss: {rloss:.5f}", end="\r")
+    if loss == -1 and loss == rloss:
+        print(
+            f"\r  │{bar}│ Progress {progress:3d}/{total:<3d} │", end="\r")
+    else:
+        print(
+            f"\r  │{bar}│ Step {progress:3d}/{total:<3d} │ Loss: {loss:.5f} RLoss: {rloss:.5f}", end="\r")
 
 
 def dictCounter(array):
