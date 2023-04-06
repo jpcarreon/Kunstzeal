@@ -1,6 +1,8 @@
-import backend
 from mutagen.mp3 import MP3
 from PySide6.QtCore import QThread, Signal
+
+import sys; sys.path.append('../')
+import spectrogram as sg
 
 class predictionWorker(QThread):
     """
@@ -35,7 +37,7 @@ class predictionWorker(QThread):
                 
                 #self.quickProcess(fp, i); continue
 
-                pred = backend.predictMusic(fp, self.net)
+                pred = sg.predictMusic(fp, self.net)
                 label, mismatch = self.checkMismatch(fp, pred)
                 
                 self.progress.emit({
@@ -101,7 +103,7 @@ class spectrogramWorker(QThread):
 
     def run(self):
         try:
-            backend.displaySpectrogram(self.fp, self.name)
+            sg.displaySpectrogram(self.fp, self.name)
         except:
             self.finished.emit(0)
         else:

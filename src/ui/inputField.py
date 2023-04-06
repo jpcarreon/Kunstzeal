@@ -4,9 +4,11 @@ from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QCursor, QColor, QIcon
 import os, sys, subprocess
 import torch
-import backend
 import threads
 
+import sys; sys.path.append('../')
+import spectrogram as sg
+import spectrogram.classifier as models
 
 class ListWidget(QWidget):
     def __init__(self):
@@ -18,7 +20,7 @@ class ListWidget(QWidget):
         self.currentCursor = QCursor()
 
         # loads CNN model and pretrained model; Model must correspond to the correct .pt file and vice-versa
-        self.ConvNet = backend.ConvNetD()
+        self.ConvNet = models.ConvNetD()
         self.ConvNet.load_state_dict(torch.load("./D1.pt", torch.device("cpu")))
         
         mainLayout = QVBoxLayout()
@@ -119,7 +121,7 @@ class ListWidget(QWidget):
         print(f"{item.text(0)} - {item.isDisabled()}")
         if item.isDisabled() or self.currentCursor.shape() != Qt.ArrowCursor: return
 
-        backend.displaySpectrogram(item.text(0), item.text(1))
+        sg.displaySpectrogram(item.text(0), item.text(1))
 
     def handleOpenFolder(self, item):
         """
