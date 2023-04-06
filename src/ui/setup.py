@@ -1,4 +1,4 @@
-import sys
+import sys; sys.path.append('../')
 from cx_Freeze import setup, Executable
 
 try:
