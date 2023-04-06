@@ -5,6 +5,7 @@ import matplotlib as mpl
 import cv2 as cv
 import librosa
 from librosa.display import specshow
+from random import randint
 
 # custom colormap to mimic the colors of spek (https://github.com/alexkay/spek)
 spek_cmap = mpl.colors.LinearSegmentedColormap.from_list(
@@ -126,9 +127,9 @@ def saveSpectrogram(
     gc.collect()
 
 
-
 def displaySpectrogram(
     filepath,
+    filename,
     n_fft=2048,
     win_size=2048,
     hop_size=512,
@@ -145,6 +146,9 @@ def displaySpectrogram(
         ----
         filepath : str
             path to the audio file
+        
+        filename: str
+            title to display on the figure
         
         n_fft : int > 0
         
@@ -173,5 +177,84 @@ def displaySpectrogram(
     img = specshow(dB, sr=sr, ax=ax, x_axis="time", y_axis="hz", cmap=spek_cmap)
 
     fig.colorbar(img, ax=ax, format=f"%0.2f dB")
-    fig.tight_layout()
-    plt.show()
+    fig.tight_layout(pad=2)
+    fig.canvas.manager.set_window_title("Spectrogram")
+
+    plt.title(filename)
+    plt.show(block=True)
+
+
+def predictMusic(
+    filepath,
+    net,
+    n_fft=2048,
+    win_size=2048,
+    hop_size=512,
+    amin=0.00184,
+    top_db=120,
+    size_x=2.56,
+    size_y=2.56
+):
+    """
+        Takes a single audio file and converts it to a spectrogram to make a prediction using the given neural network.
+        Relies of librosa to convert the audio file and matplotlib to save the spectrogram
+
+        Parameters
+        ----
+        filepath : str
+            path to the audio file
+
+        net : nn.Module()
+            neural network architecture to use to predict
+        
+        n_fft : int > 0
+        
+        win_size : int <= n_fft
+        
+        hop_size : int > 0
+        
+        amin : float > 0
+
+        top_db : float >= 0
+
+        size_x : int > 0
+            width * 100 of the spectrogram
+        
+        size_y : int > 0
+            height * 100 of the spectrogram
+
+        Returns 
+        ----
+        pred : str
+            prediction the neural network made from the spectrogram
+            possible values: ("FLAC", "V0", "320K", "192K", "128K")
+    """
+    
+    dB, sr = __loadAudioFile(filepath, n_fft, win_size, hop_size, amin, top_db)
+
+    fig, ax = plt.subplots(figsize=(size_x, size_y))
+    img = specshow(dB, sr=sr, ax=ax, x_axis="time",
+                   y_axis="hz", cmap=spek_cmap)
+
+    plt.axis("off")
+    fig.tight_layout(pad=0)
+
+    # convert plt figure to numpy 2d array representation of an image
+    fig.canvas.draw()
+    img_data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    img_data = img_data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+    # save spectrogram with randomized filename
+    outputpath = f"./lib/tmp/{randint(100, 999)}.png"
+    
+    # convert RGB to BGR before saving
+    cv.imwrite(outputpath, cv.cvtColor(img_data, cv.COLOR_RGB2BGR))
+
+    # clear figure and reclaim memory
+    plt.clf()
+    plt.close('all')
+    gc.collect()
+
+    pred = net.predictSingle(outputpath)
+
+    return pred
