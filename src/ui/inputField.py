@@ -213,10 +213,10 @@ class ListWidget(QWidget):
 
             contextMenu.addAction("Play").triggered.connect(
                 lambda _: self.handlePlayAudio(item[0]))
-            contextMenu.addAction("View Spectrogram").triggered.connect(
-                lambda _: self.handleViewSpectrogram(item[0]))
             contextMenu.addAction("Open File Folder").triggered.connect(
                 lambda _: self.handleOpenFolder(item[0]))
+            contextMenu.addAction("View Spectrogram").triggered.connect(
+                lambda _: self.handleViewSpectrogram(item[0]))
             contextMenu.addAction("Remove").triggered.connect(
                 lambda _: self.handleDeleteItem(source, item[0]))
             
