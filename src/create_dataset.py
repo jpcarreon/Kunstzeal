@@ -14,8 +14,6 @@
 """
 
 import os
-
-import sys; sys.path.append('../')
 import spectrogram as sg
 import spectrogram.utils as utils
 

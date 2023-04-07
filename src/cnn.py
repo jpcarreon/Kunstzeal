@@ -17,8 +17,6 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sn
-
-import sys; sys.path.append('../')
 import spectrogram.classifier as models
 import spectrogram.utils as utils
 
@@ -26,7 +24,7 @@ classes = ("FLAC", "V0", "320K", "192K", "128K")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # CNN configurations
-num_epochs = 20
+num_epochs = 150
 batch_size = 32
 learning_rate = 0.001
 momentum = 0.9
@@ -39,6 +37,9 @@ net_record = "./spectral_loss.csv"
 
 display_conf_matrix = False
 
+# change CNN model to use here
+net = models.ConvNetJI().to(device)
+net_test = models.ConvNetJI()
 
 
 dataset = utils.SpectrogramDataset(data_record, data_input, transforms.ToTensor())
@@ -52,10 +53,6 @@ train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size,
                                            shuffle=True, num_workers=2)
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
                                           shuffle=False, num_workers=2)
-
-# change CNN model to use here
-net = models.ConvNetD().to(device)
-net_test = models.ConvNetD()
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(
