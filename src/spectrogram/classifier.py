@@ -2,12 +2,7 @@
     Contains all CNN architectures created and tested.
 
     Sorted according to accuracy:
-    1. D
-    2. B
-    3. FD
-    4. EB
-    5. C
-    6. A
+    D, KJ, JI, B, FD, ID, EB, C, A
 """
 import torch
 import torch.nn as nn
@@ -358,6 +353,37 @@ class ConvNetJI(nn.Module, nnInference):
         x = self.pool(F.relu(self.conv2(x)))        # input -> maxpool(conv2(x)) : 61x61x128
         x = self.pool(F.relu(self.conv3(x)))        # input -> maxpool(conv3(x)) : 29x29x256
         x = self.pool(F.relu(self.conv6(F.relu(self.conv4(x)))))        # input -> maxpool(conv4(x)) : 13x13x512
+        x = self.pool(F.relu(self.conv6(F.relu(self.conv5(x)))))        # input -> maxpool(conv5(x)) : 5x5x512
+
+        x = torch.flatten(x, 1)               # flatten -> 12800
+        x = F.relu(self.fc1(x))               # fc layer 1 -> 256
+        x = F.relu(self.fc2(x))               # fc layer 2 -> 256
+        x = self.fc3(x)                       # fc layer 3 -> 5
+        return x
+
+class ConvNetKJ(nn.Module, nnInference):
+    def __init__(self):
+        super().__init__()
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv1 = nn.Conv2d(3, 64, 5, 1)         # 5x5 kernel with stride of 1; Outputs 32 features
+        self.conv2 = nn.Conv2d(64, 128, 5, 1)       # 5x5 kernel with stride of 1; Outputs 64 features
+        self.conv3 = nn.Conv2d(128, 256, 3, 1)      # 3x3 kernel with stride of 1; Outputs 128 features
+        self.conv4 = nn.Conv2d(256, 512, 3, 1)      # 3x3 kernel with stride of 1; Outputs 256 features
+        self.conv5 = nn.Conv2d(512, 512, 3, 1)      # 3x3 kernel with stride of 1; Outputs 512 features
+        self.conv6 = nn.Conv2d(512, 512, 3, 1, padding="same")      # 3x3 kernel with stride of 1 and padding of 1; Outputs 512 features
+
+        # Result of last max pooling is 5*5*512 images; thus fc layer accepts 5*5*512 neurons
+        self.fc1 = nn.Linear(5*5*512, 256)
+        self.fc2 = nn.Linear(256, 256)
+        self.fc3 = nn.Linear(256, 5)
+
+    def forward(self, x):
+        # input data -> 3, 256, 256
+        #               channels, width, length
+        x = self.pool(F.relu(self.conv1(x)))        # input -> maxpool(conv1(x)) : 126x126x64
+        x = self.pool(F.relu(self.conv2(x)))        # input -> maxpool(conv2(x)) : 61x61x128
+        x = self.pool(F.relu(self.conv3(x)))        # input -> maxpool(conv3(x)) : 29x29x256
+        x = self.pool(F.relu(self.conv4(x)))        # input -> maxpool(conv4(x)) : 13x13x512
         x = self.pool(F.relu(self.conv6(F.relu(self.conv5(x)))))        # input -> maxpool(conv5(x)) : 5x5x512
 
         x = torch.flatten(x, 1)               # flatten -> 12800

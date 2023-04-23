@@ -24,7 +24,7 @@ classes = ("FLAC", "V0", "320K", "192K", "128K")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # CNN configurations
-num_epochs = 150
+num_epochs = 100
 batch_size = 32
 learning_rate = 0.001
 momentum = 0.9
@@ -38,8 +38,8 @@ net_record = "./spectral_loss.csv"
 display_conf_matrix = False
 
 # change CNN model to use here
-net = models.ConvNetJI().to(device)
-net_test = models.ConvNetJI()
+net = models.ConvNetKJ().to(device)
+net_test = models.ConvNetKJ()
 
 
 dataset = utils.SpectrogramDataset(data_record, data_input, transforms.ToTensor())
